@@ -4,11 +4,13 @@
 #include "Hardware/Input/INS.hpp"
 // #include "Hardware/Output/ReleaseMechanism.hpp"
 // #include "Hardware/Output/SolarMechansim.hpp"
-// #include "Utils/DataStructure.hpp"
+#include "Telemetry/TelemetryDispatcher.hpp"
+ #include "Utils/DataStructure.hpp"
 #include <Arduino.h>
 
 Barometer barometer;
 INS ins;
+TelemetryDispatcher dispatcher;
 // ReleaseMechanism release(14);
 // SolarMechanism solarM(13);
 GPS gps;
@@ -17,13 +19,14 @@ GPS gps;
 enum FlightState { LAUNCH_PAD, ASCENT, APOGEE, DESCENT, LANDING };
 FlightState LaunchPad() {
   (barometer.GetAltitude() > 10 &&  gps.GetVelocity() > 3) ? FlightState::ASCENT : FlightState::LAUNCH_PAD;
-
-      return FlightState::ASCENT;
+  
+  return FlightState::ASCENT;
 }
 FlightState Ascent() { return FlightState::APOGEE; }
 FlightState Apogee() { return FlightState::DESCENT; }
 FlightState Descent() { return FlightState::LANDING; }
 FlightState Landing() { return FlightState::LANDING; }
+FlightState currentFlight = FlightState::LAUNCH_PAD;
 
 void HandleState(FlightState currentFlight) {
   switch (currentFlight) {
@@ -97,6 +100,47 @@ void loop() {
   //  ins.PrintValues();
 
    // barometer.PrintValues();
+   Telemetry::TelemetryData telemetryData;
+   telemetryData = *dispatcher.GetTelemetryData();
+   telemetryData.missionTime = millis();
+   telemetryData.packetCount +=1;
+   telemetryData.state =  FlightState::LAUNCH_PAD;
+   telemetryData.mechState = 0;
+   telemetryData.solarState = 0;
+   telemetryData.solarPanel1 = 0.0;
+   telemetryData.solarPanel2 = 0.0;
+   imu::Vector<3> accel = ins.GetAcceleration();
+   telemetryData.accelX = accel.x();
+   telemetryData.accelY = accel.y();
+   telemetryData.accelZ = accel.z();
+   imu::Vector<3> gyro = ins.GetEulerRotation();
+   telemetryData.gyroP = gyro.x();
+   telemetryData.gyroR = gyro.y();
+   telemetryData.gyroY = gyro.z();
+   telemetryData.altitude = barometer.GetAltitude();
+   telemetryData.temp = barometer.GetTemperature();
+   telemetryData.batteryVoltage = 0.0;
+   dispatcher.UpdateTelemetry(telemetryData);
+  Serial.print("Telemetry Data: \n");
+  Serial.print(dispatcher.ParseDataStructure().c_str());
+  /*
+  Serial.print("\nMission Time: ");
+  Serial.print(telemetryData.missionTime);
+  Serial.print("\n Packet Count: ");
+  Serial.print(telemetryData.packetCount);
+ Serial.print("\n gyroP: ");
+  Serial.print(telemetryData.gyroP);
+  Serial.print("\n");
+
+  Serial.print("\n Mech State: ");
+  Serial.print(telemetryData.mechState);
+  Serial.print("\n Solar State: ");
+  Serial.print(telemetryData.solarState);
+  Serial.print("\n Solar Panel 1: ");
+  Serial.print(telemetryData.solarPanel1);
+  Serial.print(" Solar Panel 2: ");
+  Serial.print(telemetryData.solarPanel2);
+   */
   }
 
   // Serial.println("meow");

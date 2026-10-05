@@ -12,11 +12,12 @@ CHALLENGE_OPTION_DATA
 */
 
 struct TelemetryData {
-  std::string teamId = "CANTINA-#4";
-  std::string missionTime; // 00:00:00
+  
+   std::string teamId = "0004";
+  unsigned long missionTime; // 00:00:00
   int packetCount;         // 0000000
   std::string state;       // 0000000
-  std::string mechState;   // 0000000
+   int mechState;   // 0000000
   float altitude;         // 000.00
   float temp;             // 000.00
   float batteryVoltage;   // 0.00
@@ -30,7 +31,7 @@ struct TelemetryData {
   float accelY;
   float accelZ;
 
-  std::string solarState; // 00000000
+  int solarState; // 00000000
   float solarPanel1;      // 00000000
   float solarPanel2;      // 00000000
                           // 0.00

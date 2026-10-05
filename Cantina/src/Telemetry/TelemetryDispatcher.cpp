@@ -16,9 +16,11 @@ std::string TelemetryDispatcher::ParseDataStructure() {
 // serial2 or somthing
 void TelemetryDispatcher::WriteTelemetry() {
   ParseDataStructure();
-  // Serial2.write(ParseDataStructure().c_str());
+  Serial.write(ParseDataStructure().c_str());
 }
-
+Telemetry::TelemetryData* TelemetryDispatcher::GetTelemetryData() {
+  return &data;
+}
 void TelemetryDispatcher::UpdateTelemetry(Telemetry::TelemetryData newData) {
-  newData = data;
+   data = newData;
 }

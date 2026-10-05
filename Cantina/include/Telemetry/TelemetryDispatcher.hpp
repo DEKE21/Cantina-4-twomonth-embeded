@@ -11,6 +11,7 @@ private:
 public:
   TelemetryDispatcher();
   std::string ParseDataStructure();
+  Telemetry::TelemetryData* GetTelemetryData();
   void UpdateTelemetry(Telemetry::TelemetryData newData);
   void WriteTelemetry();
 };
