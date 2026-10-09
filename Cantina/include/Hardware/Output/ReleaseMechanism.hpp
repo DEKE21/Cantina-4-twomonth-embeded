@@ -5,7 +5,7 @@ class ReleaseMechanism {
 
 private:
   Servo releaseServo;
-  double position;
+  float position;
   int pinout = 0;
   bool Safe = true;
   ReleaseState state = ReleaseState::IDLE;

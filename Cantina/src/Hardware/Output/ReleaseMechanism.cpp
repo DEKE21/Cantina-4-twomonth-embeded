@@ -5,10 +5,7 @@ ReleaseMechanism::ReleaseMechanism(int pinout) {
 }
 void ReleaseMechanism::Begin() {
   releaseServo.attach(pinout);
-  	ESP32PWM::allocateTimer(0);
-	ESP32PWM::allocateTimer(1);
-	ESP32PWM::allocateTimer(2);
-	ESP32PWM::allocateTimer(3);
+
 	releaseServo.setPeriodHertz(50);    // standard 50 hz servo
   UpdateLoop();
   if (position) {
@@ -16,7 +13,7 @@ void ReleaseMechanism::Begin() {
             : (position == 0) ? ReleaseState::STOWED
                               : ReleaseState::IDLE;
   }
-  Stow();
+  //Stow();
 }   
 double ReleaseMechanism::GetPosition() { return releaseServo.read(); }
 
