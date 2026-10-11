@@ -9,8 +9,8 @@ void Barometer::begin() {
 
     Serial.print("BAD BAD BAD");
   };
-bmp.performReading(); 
-localPresure= bmp.readPressure()/100;
+  bmp.performReading(); 
+  localPresure= bmp.readPressure()/100;
    bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
    bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
     bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);

@@ -20,9 +20,10 @@ public:
   void UpdateValues();
 
   std::array<long, 3> GetPosition();
-  long GetLat();
-  long GetLongit();
-  long GetAlt();
+  long GetLatitude();
+  long GetLongitude();
+  
+  long GetAltitude();
   uint8_t GetSats();
   uint8_t GetFixType(); // Added so you can track your fix status directly
   float GetVelocity();

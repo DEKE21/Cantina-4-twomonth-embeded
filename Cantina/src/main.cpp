@@ -16,9 +16,9 @@
 String info;
 // Received command from Ground Station
 String command;
-// Some booleans used later on to change what my info string is sending
-bool Mech_one = false;
-bool Mech_two = false;
+bool releaseStatus = false;
+bool SendTelemetry = true;
+bool solarMechStatus = false;
 // THE MAC ADDRESS of Responder
 uint8_t MAC[] = {0x68, 0x09, 0x47, 0x9D, 0xF3, 0x18};
 Barometer barometer;
@@ -44,21 +44,29 @@ void Ascent() {
   }
 }
 // Release Mechanism
-void Apogee() { release.Release(); }
+void Apogee() {
+
+  release.Release();
+  static double lastDescentTime = 0;
+  if (millis() - lastDescentTime >= 1000) {
+    currentFlight = FlightState::DESCENT;
+  }
+}
 // diode release & ers
-FlightState Descent() {
+void Descent() {
   static double lastDescentTime = 0;
   lastDescentTime = millis();
-
-  if (millis() - lastDescentTime >= 5000) {
+  // -1 second because apogee is held a second
+  if (millis() - lastDescentTime >= 4000) {
     solarM.Release();
   }
-  return (barometer.GetAltitude() < 100 && gps.GetVelocity() < 1)
-             ? FlightState::LANDING
-             : FlightState::DESCENT;
+  currentFlight = (barometer.GetAltitude() < 50 && gps.GetVelocity() < 1)
+                      ? FlightState::LANDING
+                      : FlightState::DESCENT;
 }
 
-FlightState Landing() { return FlightState::LANDING; }
+FlightState Landing() { /// return FlightState::LANDING;
+}
 
 void HandleState(FlightState currentFlight) {
   switch (currentFlight) {
@@ -93,35 +101,61 @@ void onDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   Serial.println(command);
 
   // Check commands using evaluation operators (==)
+
   if (command == "CMD RELEASE") {
-    if (Mech_one) {
-      Mech_one = false;
-    } else {
-      Mech_one = true;
-    }
-  } else if (command == "CMD TX") {
-    Mech_two = true;
-  } else if (command == "CMD STOW") {
-    Mech_one = false;
-  } else if (command == "CMD CX") {
-    Mech_two = false;
+    releaseStatus = true;
+  }
+  if (command == "CMD STOW") {
+    releaseStatus = false;
+  }
+  if (command == "CMD DEPLOY") {
+    solarMechStatus = true;
+  }
+  if (command == "CMD RETRACT") {
+    solarMechStatus = false;
+  }
+  if (command == "CMD CX START") {
+    SendTelemetry = true;
+  }
+  if (command == "CMD CX STOP") {
+    SendTelemetry = false;
   }
 }
 
-// DataStructure myFunction(int, int);
+void TelemetryUpdateLoop() {
+  imu::Vector<3> accel = ins.GetAcceleration();
+  imu::Vector<3> gyro = ins.GetEulerRotation();
+
+  dispatcher.GetTelemetryData()->missionTime = millis();
+  dispatcher.GetTelemetryData()->packetCount += 1;
+  dispatcher.GetTelemetryData()->state = currentFlight;
+  dispatcher.GetTelemetryData()->mechState = releaseStatus;
+  dispatcher.GetTelemetryData()->solarState = SendTelemetry;
+  dispatcher.GetTelemetryData()->solarPanel1 = 0.0;
+  dispatcher.GetTelemetryData()->solarPanel2 = 0.0;
+  dispatcher.GetTelemetryData()->accelX = accel.x();
+  dispatcher.GetTelemetryData()->accelY = accel.y();
+  dispatcher.GetTelemetryData()->accelZ = accel.z();
+  dispatcher.GetTelemetryData()->gyroP = gyro.x();
+  dispatcher.GetTelemetryData()->gyroR = gyro.y();
+  dispatcher.GetTelemetryData()->gyroY = gyro.z();
+  dispatcher.GetTelemetryData()->altitude = barometer.GetAltitude();
+  dispatcher.GetTelemetryData()->temp = barometer.GetTemperature();
+  dispatcher.GetTelemetryData()->batteryVoltage = 0.0;
+  dispatcher.GetTelemetryData()->gpsLatitude = gps.GetLongitude();
+  dispatcher.GetTelemetryData()->gpsLongitude = gps.GetLatitude();
+  dispatcher.GetTelemetryData()->gpsSats = gps.GetSats();
+}
 const int BUTTON_PIN = 18;
 bool lastButtonState = true;
 
 void setup() {
-  // put your setup code here, to run once:
-  // int result = myFunction(2, 3);
+
   Serial.begin(115200);
   Wire.begin(26, 27);
-  barometer.begin();
-  ins.Begin();
-  release.Begin();
-  // solarM.Begin();
-  gps.Begin();
+  // hope these are the default pins :(
+  // Serial1.setPins()
+  Serial1.begin(115200);
 
   pinMode(BUTTON_PIN, INPUT);
 
@@ -144,7 +178,7 @@ void setup() {
   // the int chan will be your team number.
   // Also with my error earlier, found something on basically a Redit site below
   // of how to fix the peer stuff.
-  int chan = 2;
+  int chan = 4;
   ESP_ERROR_CHECK(esp_wifi_set_channel(chan, WIFI_SECOND_CHAN_NONE));
   if (esp_now_init() != ESP_OK) {
     ESP.restart();
@@ -164,6 +198,13 @@ void setup() {
   // This will be the function playing in the background listening for any
   // commands coming in.
   esp_now_register_recv_cb(onDataRecv);
+  // Initialize the sensors after delay for espNOW to prevent race conditions.
+  ins.Begin();
+  release.Begin();
+  // solarM.Begin();
+  gps.Begin();
+
+  barometer.begin();
 }
 
 void loop() {
@@ -171,26 +212,14 @@ void loop() {
 
   if (lastButtonState == true && currentButtonState == false) {
     if (release.GetPosition() >= 85 && release.GetPosition() <= 95)
-      release.Release();
+      releaseStatus = true;
     else {
-      release.Stow();
+      releaseStatus = false;
     }
   }
   lastButtonState = currentButtonState;
   // Serial.println(release.GetPosition());
   //  analogWrite(25, HIGH);
-
-  // gps.UpdateValues();
-  // Serial.println( ());
-  // put your main code here, to run repeatedly:
-
-  // solarM.Release();
-  //  release.Stow();
-  // 2  delay(30000);
-  // solarM.Stow();
-  //  release.Release();
-  //  delay(30000);
-  // gps.UpdateValues();
 
   // Serial.println(release.GetPosition());
   static uint32_t lastUpdateTime = 0;
@@ -207,45 +236,10 @@ void loop() {
     lastUpdateTime = millis();
     Serial.print(currentFlight);
     Serial.print("\n \t Mech: ");
-    Serial.print(Mech_one);
-    /*
-        Serial.print("\nSATS: ");
-        Serial.print(gps.GetSats());
-        Serial.print("\nAltit: ");
-        Serial.print(gps.GetAlt());
-        Serial.print("\nLAT: ");
-        Serial.print(gps.GetLat() / 10000000.0, 7);
-        Serial.print("\nLong: ");
-        Serial.print(gps.GetLongit() / 10000000.0, 7);
-        Serial.print("\n");
-        Serial.print("gorund sppeed: ");
+    Serial.print(releaseStatus);
 
-        Serial.print(gps.GetVelocity(), 7);
-        Serial.print("\n");
-        ins.PrintValues();
-    */
     barometer.PrintValues();
-    Telemetry::TelemetryData telemetryData;
-    telemetryData = *dispatcher.GetTelemetryData();
-    telemetryData.missionTime = millis();
-    telemetryData.packetCount += 1;
-    telemetryData.state = FlightState::LAUNCH_PAD;
-    telemetryData.mechState = 0;
-    telemetryData.solarState = 0;
-    telemetryData.solarPanel1 = 0.0;
-    telemetryData.solarPanel2 = 0.0;
-    imu::Vector<3> accel = ins.GetAcceleration();
-    telemetryData.accelX = accel.x();
-    telemetryData.accelY = accel.y();
-    telemetryData.accelZ = accel.z();
-    imu::Vector<3> gyro = ins.GetEulerRotation();
-    telemetryData.gyroP = gyro.x();
-    telemetryData.gyroR = gyro.y();
-    telemetryData.gyroY = gyro.z();
-    telemetryData.altitude = barometer.GetAltitude();
-    telemetryData.temp = barometer.GetTemperature();
-    telemetryData.batteryVoltage = 0.0;
-    dispatcher.UpdateTelemetry(telemetryData);
+
     // Serial.print("Telemetry Data: \n");
     // Serial.print(dispatcher.ParseDataStructure().c_str());
     /*
@@ -295,28 +289,28 @@ void loop() {
    csv.WriteData(data);
    csv.StopWriting();
    */
-  if (!Mech_one) {
-    info = "Container retracted";
-    // release.Stow();
+  if (!releaseStatus) {
+     release.Stow();
   }
-  if (Mech_one && !Mech_two) {
-    info = "Container released";
-    // release.Release();
+  if (releaseStatus ) {
+     release.Release();
   }
-
-  else if (Mech_two && !Mech_one) {
-    info = "Mech_two released";
-  } else {
-    info = "Hello";
-  }
+  if (solarMechStatus) {}
+  if (!solarMechStatus) {}
+  
   // Serial.println(info);
   //  function to send out the data
   //  MAC to where you sending
   //  The data being sent
   //  Length of data
-  esp_now_send(MAC, (uint8_t *)info.c_str(), info.length() + 1);
-
-  delay(500);
+  if (SendTelemetry) {
+    info = dispatcher.WriteTelemetry().c_str();
+    static uint32_t lastTransmissionTime = 0;
+    if (millis() - lastTransmissionTime >= 250) {
+      esp_now_send(MAC, (uint8_t *)info.c_str(), info.length() + 1);
+      lastTransmissionTime = millis();
+    }
+  }
 }
 
 // put function definitions here:

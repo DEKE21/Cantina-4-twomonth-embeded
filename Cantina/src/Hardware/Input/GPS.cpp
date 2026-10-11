@@ -34,9 +34,9 @@ void GPS::UpdateValues() {
   }
 }
 
-long GPS::GetLat() { return lat; }
-long GPS::GetLongit() { return longit; }
-long GPS::GetAlt() { return alt; }
+long GPS::GetLatitude() { return lat; }
+long GPS::GetLongitude() { return longit; }
+long GPS::GetAltitude() { return alt; }
 uint8_t GPS::GetSats() { return sats; }
 uint8_t GPS::GetFixType() { return fixType; }
 float GPS::GetVelocity() { return gps.getGroundSpeed()/1000; }
