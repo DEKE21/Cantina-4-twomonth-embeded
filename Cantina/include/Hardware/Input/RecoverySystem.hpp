@@ -2,10 +2,11 @@
 
 class RecoverySystem {
 private:
-int LEDPin;
-int buzzerPin;
+  // int LEDPin;
+  int buzzerPin;
+
 public:
-RecoverySystem(int LEDPin, int buzzerPin);
-void Begin();
-void LoopStep();
+  RecoverySystem(int buzzerPin);
+  void Begin();
+  void LoopStep();
 };

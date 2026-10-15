@@ -1,15 +1,15 @@
 #include <ESP32Servo.h>
 
 class SolarMechanism {
-
-  enum SolarMechanismState { IDLE, DEPLOY, STOWED };
+ 
+  //enum ReleaseState { IDLE, RELEASE, STOWED };
 
 private:
   Servo solarServo;
-  double position;
+  float position;
   int pinout = 0;
   bool Safe = true;
-  SolarMechanismState state = SolarMechanismState::IDLE;
+ // ReleaseState state = ReleaseState::IDLE;
 
 public:
   SolarMechanism(int pin);
@@ -17,6 +17,5 @@ public:
   void Release();
   void Stow();
   double GetPosition();
-  SolarMechanismState decideState();
   void UpdateLoop();
 };

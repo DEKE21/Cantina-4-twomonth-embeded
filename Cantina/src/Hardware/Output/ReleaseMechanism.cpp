@@ -6,24 +6,17 @@ ReleaseMechanism::ReleaseMechanism(int pinout) {
 void ReleaseMechanism::Begin() {
   releaseServo.attach(pinout);
 
-	releaseServo.setPeriodHertz(50);    // standard 50 hz servo
+  releaseServo.setPeriodHertz(50); // standard 50 hz servo
   UpdateLoop();
   if (position) {
     state = (position == 180) ? ReleaseState::RELEASE
             : (position == 0) ? ReleaseState::STOWED
                               : ReleaseState::IDLE;
   }
-  //Stow();
-}   
+  // Stow();
+}
 double ReleaseMechanism::GetPosition() { return releaseServo.read(); }
 
 void ReleaseMechanism::UpdateLoop() { position = releaseServo.read(); }
-void ReleaseMechanism::Stow() {
-    releaseServo.write(90);
-  
-}
-void ReleaseMechanism::Release() {
-    releaseServo.write(180);
-
-  
-}
+void ReleaseMechanism::Stow() { releaseServo.write(0); }
+void ReleaseMechanism::Release() { releaseServo.write(90); }

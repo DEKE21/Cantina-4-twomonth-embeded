@@ -1,17 +1,23 @@
-#include <Arduino.h>
-#include <Utils/DataStructure.hpp>
-#include <sstream>
+#ifndef TelemetryDispatcher_HPP
+#define TelemetryDispatcher_HPP
+
+#include "Utils/DataStructure.hpp" // Adjust to match your struct header name
+#include <cstring>
+#include <iostream>
 #include <string>
 
 
 class TelemetryDispatcher {
-private:
-  Telemetry::TelemetryData data;
-
 public:
   TelemetryDispatcher();
   std::string ParseDataStructure();
-  std::string WriteTelemetry();
+  std::string WriteTelemetry(); // Must say std::string here too!
   Telemetry::TelemetryData *GetTelemetryData();
-  void UpdateTelemetry(const Telemetry::TelemetryData &newData);
+  void UpdateTelemetry(
+      const Telemetry::TelemetryData &newData); // Must have const & here too!
+
+private:
+  Telemetry::TelemetryData data;
 };
+
+#endif

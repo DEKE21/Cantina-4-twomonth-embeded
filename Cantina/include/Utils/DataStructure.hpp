@@ -4,38 +4,28 @@
 
 namespace Telemetry {
 
-/*
-TEAM_ID, MISSION_TIME, PACKET_COUNT, STATE, MECH_STATE,
-ALTITUDE, TEMP, BATTERY_VOLTAGE, GPS_LATITUDE,
-GPS_LONGITUDE, GPS_SATS, GYRO_R, GYRO_P, GYRO_Y,
-CHALLENGE_OPTION_DATA
-*/
-
 struct __attribute__((packed)) TelemetryData {
-
   std::string teamId = "0004";
-  unsigned long missionTime; // 00:00:00
-  int packetCount;           // 0000000
-  int state;                 // 0000000
-  int mechState;             // 0000000
-  float altitude;            // 000.00
-  float temp;                // 000.00
-  float batteryVoltage;      // 0.00
-  float gpsLatitude;         // 0.0000
-  float gpsLongitude;        // 0.0000
-  int gpsSats;               // 00
-  float gyroR;               // 000.00
-  float gyroP;               // 000.00
-  float gyroY;               // 000.00
+  unsigned long missionTime;
+  int packetCount;
+  int state;
+  int mechState;
+  float altitude;
+  float temp;
+  float batteryVoltage;
+  float gpsLatitude;
+  float gpsLongitude;
+  int gpsSats;
+  float gyroR;
+  float gyroP;
+  float gyroY;
   float accelX;
   float accelY;
   float accelZ;
-
-  int solarState;    // 00000000
-  float solarPanel1; // 00000000
-  float solarPanel2; // 00000000
-                     // 0.00
-                     // 0.00
+  int solarState;
+  float solarPanel1;
+  float solarPanel2;
 };
+
 } // namespace Telemetry
 #endif

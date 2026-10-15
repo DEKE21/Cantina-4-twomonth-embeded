@@ -12,6 +12,7 @@ private:
   long lat = 0; // Changed to int32_t to safely support negative coordinates
   long longit = 0; // Changed to int32_t
   long alt = 0;    // Changed to int32_t
+  float velocity = 0.0f; // Changed to float for more accurate velocity representation
   uint8_t fixType = 0;
 
 public:
