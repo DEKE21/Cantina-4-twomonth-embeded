@@ -22,7 +22,6 @@ struct __attribute__((packed)) TelemetryData {
   float accelX;
   float accelY;
   float accelZ;
-  int solarState;
   float solarPanel1;
   float solarPanel2;
 };

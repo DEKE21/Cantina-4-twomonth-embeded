@@ -132,11 +132,9 @@ void onDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   } else if (command == "CMD CX START") {
     SendTelemetry = true;
-    //   newReleaseCMD = true;
 
   } else if (command == "CMD CX STOP") {
     SendTelemetry = false;
-    // newReleaseCMD = true;
   }
   if (command == "AT") {
   }
@@ -152,8 +150,9 @@ void TelemetryUpdateLoop() {
           sizeof(dispatcher.GetTelemetryData()->state) - 1);
   // dispatcher.GetTelemetryData()
   //    ->state[sizeof(dispatcher.GetTelemetryData()->state) - 1] = '\0';
-  dispatcher.GetTelemetryData()->mechState = releaseStatus;
-  dispatcher.GetTelemetryData()->solarState = solarMechStatus;
+  // this is really dumb, but see it converting bool to int to satisfy type will
+  // fix telem status
+  dispatcher.GetTelemetryData()->mechState = solarMechStatus ? 1 : 0;
   dispatcher.GetTelemetryData()->solarPanel1 = solarPanel.GetVoltage()[0];
   dispatcher.GetTelemetryData()->solarPanel2 = solarPanel.GetVoltage()[1];
   dispatcher.GetTelemetryData()->accelX = accel.x();
@@ -225,10 +224,10 @@ void setup() {
 }
 
 void loop() {
-  HandleState(currentFlight);
   gps.UpdateValues();
   static uint32_t lastUpdateTime = 0;
-  // Only poll the GPS once every 100 milliseconds
+  HandleState(currentFlight);
+  // Only poll the sensors once every 100 milliseconds
   if (millis() - lastUpdateTime >= 100) {
     solarPanel.UpdateValues();
     barometer.UpdateValues();
@@ -270,15 +269,13 @@ void loop() {
       info = "";
     }
   }
-  if (SendTelemetry) {
-    static uint32_t lastTransmissionTime = 0;
-    if (millis() - lastTransmissionTime >= 250) {
-      dispatcher.GetTelemetryData()->packetCount += 1;
-      info = (SendTelemetry) ? dispatcher.WriteTelemetry().c_str()
-                             : "CX STOPPED Heartbeat";
-      esp_now_send(MAC, (uint8_t *)info.c_str(), info.length() + 1);
-      lastTransmissionTime = millis();
-    }
-    info = "";
+  static uint32_t lastTransmissionTime = 0;
+  if (millis() - lastTransmissionTime >= 250) {
+    dispatcher.GetTelemetryData()->packetCount += 1;
+    info = (SendTelemetry) ? dispatcher.WriteTelemetry().c_str()
+                           : "CX STOPPED Heartbeat";
+    esp_now_send(MAC, (uint8_t *)info.c_str(), info.length() + 1);
+    lastTransmissionTime = millis();
   }
+  info = "";
 }
