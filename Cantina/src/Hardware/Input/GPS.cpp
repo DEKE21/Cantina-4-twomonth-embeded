@@ -25,19 +25,36 @@ void GPS::UpdateValues() {
     sats = gps.getSIV();
 
     if (gps.getGnssFixOk()) {
-      lat = gps.getLatitude();
-      longit = gps.getLongitude();
-      alt = gps.getAltitude();
-      velocity = gps.getGroundSpeed() / 1000.0f; // mm/s to m/s
+      latitude = gps.getLatitude() ;
+      longitude = gps.getLongitude() ;
+      altitude = gps.getAltitude() ;    // mm 
+      velocity = gps.getGroundSpeed() ; // mm/s 
     }
   }
 }
-
-long GPS::GetLatitude() { return lat; }
-long GPS::GetLongitude() { return longit; }
-long GPS::GetAltitude() { return alt; }
+void GPS::PrintValues() {
+  Serial.print("GPS: ");
+  Serial.print("Fix Type: ");
+  Serial.print(fixType);
+  Serial.print(", Sats: ");
+  Serial.print(sats);
+  Serial.print(", Lat: ");
+  Serial.print(latitude); // Convert to degrees
+  Serial.print(", Long: ");
+  Serial.print(longitude); // Convert to degrees
+  Serial.print(", Alt: ");
+  Serial.print(altitude); // Convert to meters
+  Serial.print(" m, Vel: ");
+  Serial.print(velocity, 2);
+  Serial.println(" m/s");
+}
+int32_t GPS::GetLatitude() { return latitude; }
+int32_t GPS::GetLongitude() { return longitude; }
+long GPS::GetAltitude() { return altitude; }
 uint8_t GPS::GetSats() { return sats; }
 uint8_t GPS::GetFixType() { return fixType; }
-float GPS::GetVelocity() { return velocity; }
+int32_t GPS::GetVelocity() { return velocity; }
 
-std::array<long, 3> GPS::GetPosition() { return {longit, lat, alt}; }
+std::array<long, 3> GPS::GetPosition() {
+  return {longitude, latitude, altitude};
+}

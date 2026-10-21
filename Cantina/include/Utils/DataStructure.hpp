@@ -8,13 +8,13 @@ struct __attribute__((packed)) TelemetryData {
   std::string teamId = "0004";
   unsigned long missionTime;
   int packetCount;
-  int state;
+  char state[15];
   int mechState;
   float altitude;
   float temp;
   float batteryVoltage;
-  float gpsLatitude;
-  float gpsLongitude;
+  double gpsLatitude;
+  double gpsLongitude;
   int gpsSats;
   float gyroR;
   float gyroP;

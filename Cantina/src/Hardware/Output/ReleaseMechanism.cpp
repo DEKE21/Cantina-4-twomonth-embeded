@@ -18,5 +18,5 @@ void ReleaseMechanism::Begin() {
 double ReleaseMechanism::GetPosition() { return releaseServo.read(); }
 
 void ReleaseMechanism::UpdateLoop() { position = releaseServo.read(); }
-void ReleaseMechanism::Stow() { releaseServo.write(0); }
-void ReleaseMechanism::Release() { releaseServo.write(90); }
+void ReleaseMechanism::Stow() { releaseServo.write(20); }
+void ReleaseMechanism::Release() { releaseServo.write(75); }

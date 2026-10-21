@@ -16,7 +16,7 @@ void RecoverySystem::LoopStep() {
     digitalWrite(buzzerPin, HIGH);
   }
   if (millis() - lastCycle >= 1000) {
-    //  digitalWrite(LEDPin, LOW);
+      //  digitalWrite(LEDPin, LOW);
     digitalWrite(buzzerPin, LOW);
     lastCycle = millis();
   }

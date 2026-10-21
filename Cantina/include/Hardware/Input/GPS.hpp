@@ -1,31 +1,31 @@
 #pragma once
+#include <Arduino.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 #include <Wire.h>
 #include <array>
 #include <type_traits>
-#include <Arduino.h>
 
 class GPS {
 private:
   SFE_UBLOX_GNSS gps;
   uint8_t sats = 0;
-  long lat = 0; // Changed to int32_t to safely support negative coordinates
-  long longit = 0; // Changed to int32_t
-  long alt = 0;    // Changed to int32_t
-  float velocity = 0.0f; // Changed to float for more accurate velocity representation
+  int32_t latitude = 0;
+  int32_t longitude = 0;
+  long altitude = 0;
+  int32_t velocity = 0.0;
   uint8_t fixType = 0;
 
 public:
   GPS();
   void Begin();
   void UpdateValues();
-
+  void PrintValues();
   std::array<long, 3> GetPosition();
-  long GetLatitude();
-  long GetLongitude();
-  
+  int32_t GetLatitude();
+  int32_t GetLongitude();
   long GetAltitude();
+  int32_t GetVelocity();
+
+  uint8_t GetFixType();
   uint8_t GetSats();
-  uint8_t GetFixType(); // Added so you can track your fix status directly
-  float GetVelocity();
 };

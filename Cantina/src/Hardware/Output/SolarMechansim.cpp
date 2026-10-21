@@ -1,29 +1,20 @@
 #include "Hardware/Output/SolarMechanism.hpp"
 
-SolarMechanism::SolarMechanism(int pinout) {
-  SolarMechanism::pinout = pinout;
-}
+SolarMechanism::SolarMechanism(int pinout) { SolarMechanism::pinout = pinout; }
 void SolarMechanism::Begin() {
   solarServo.attach(pinout);
 
-	solarServo.setPeriodHertz(50);    // standard 50 hz servo
+  solarServo.setPeriodHertz(50); // standard 50 hz servo
   UpdateLoop();
   if (position) {
-   // state = (position == 180) ? SolarMechanism::RELEASE
+    // state = (position == 180) ? SolarMechanism::RELEASE
     //        : (position == 0) ? SolarMechanism::STOWED
-                 //             : SolarMechanism::IDLE;
-  }//
-  //Stow();
-}   
+    //             : SolarMechanism::IDLE;
+  } //
+  // Stow();
+}
 double SolarMechanism::GetPosition() { return solarServo.read(); }
 
 void SolarMechanism::UpdateLoop() { position = solarServo.read(); }
-void SolarMechanism::Stow() {
-    solarServo.write(0);
-  
-}
-void SolarMechanism::Release() {
-    solarServo.write(90);
-
-  
-}
+void SolarMechanism::Stow() { solarServo.write(100); }
+void SolarMechanism::Deploy() { solarServo.write(175); }
